@@ -1,12 +1,16 @@
 from cryptography.fernet import Fernet
 import os
+import tkinter as tk
+from tkinter import filedialog, messagebox
+from tkinter import ttk
+import time
 
 def generate_key():
     """Generate a key and save it to a file."""
     key = Fernet.generate_key()
     with open("key.key", "wb") as key_file:
         key_file.write(key)
-    print("Key generated and saved to 'key.key'.")
+    messagebox.showinfo("Success", "Key generated and saved to 'key.key'.")
 
 def load_key():
     """Load the key from the 'key.key' file."""
@@ -29,9 +33,9 @@ def encrypt_file(file_path):
         with open(file_path, "wb") as file:
             file.write(encrypted_data)
 
-        print(f"File '{file_path}' has been encrypted.")
+        messagebox.showinfo("Success", f"File '{file_path}' has been encrypted.")
     except Exception as e:
-        print(f"An error occurred during encryption: {e}")
+        messagebox.showerror("Error", f"An error occurred during encryption: {e}")
 
 def decrypt_file(file_path):
     """Decrypt the contents of a file."""
@@ -47,33 +51,59 @@ def decrypt_file(file_path):
         with open(file_path, "wb") as file:
             file.write(decrypted_data)
 
-        print(f"File '{file_path}' has been decrypted.")
+        messagebox.showinfo("Success", f"File '{file_path}' has been decrypted.")
     except Exception as e:
-        print(f"An error occurred during decryption: {e}")
+        messagebox.showerror("Error", f"An error occurred during decryption: {e}")
+
+def select_file(operation):
+    file_path = filedialog.askopenfilename(title="Select a File", filetypes=[("All Files", "*.*")])
+    if not file_path:
+        return
+    if operation == "encrypt":
+        encrypt_file(file_path)
+    elif operation == "decrypt":
+        decrypt_file(file_path)
+
+def animate_progress_bar(progress_bar):
+    for i in range(101):
+        time.sleep(0.01)
+        progress_bar["value"] = i
+        progress_bar.update()
 
 def main():
-    while True:
-        print("\nFile Encryption/Decryption Application")
-        print("1. Generate Key")
-        print("2. Encrypt File")
-        print("3. Decrypt File")
-        print("4. Exit")
+    root = tk.Tk()
+    root.title("File Encrypt/Decrypt")
+    root.geometry("500x300")
+    root.resizable(False, False)
+    root.configure(bg="#f0f0f0")
 
-        choice = input("Enter your choice: ")
+    style = ttk.Style()
+    style.configure("TButton", font=("Helvetica", 10), padding=5)
+    style.configure("TProgressbar", thickness=10)
 
-        if choice == "1":
-            generate_key()
-        elif choice == "2":
-            file_path = input("Enter the path of the file to encrypt: ")
-            encrypt_file(file_path)
-        elif choice == "3":
-            file_path = input("Enter the path of the file to decrypt: ")
-            decrypt_file(file_path)
-        elif choice == "4":
-            print("Exiting application.")
-            break
-        else:
-            print("Invalid choice. Please try again.")
+    canvas = tk.Canvas(root, width=500, height=300, bg="#f0f0f0", highlightthickness=0)
+    canvas.create_oval(-150, -150, 650, 650, fill="#e3f2fd", outline="")
+    canvas.pack(fill="both", expand=True)
+
+    header = tk.Label(root, text="File Encryption & Decryption", font=("Helvetica", 18, "bold"), bg="#e3f2fd", fg="#333")
+    header.place(relx=0.5, rely=0.2, anchor="center")
+
+    progress_bar = ttk.Progressbar(root, orient="horizontal", length=200, mode="determinate")
+    progress_bar.place(relx=0.5, rely=0.35, anchor="center")
+
+    btn_generate = ttk.Button(root, text="Generate Key", command=lambda: [animate_progress_bar(progress_bar), generate_key()])
+    btn_generate.place(relx=0.5, rely=0.5, anchor="center", width=200)
+
+    btn_encrypt = ttk.Button(root, text="Encrypt File", command=lambda: [animate_progress_bar(progress_bar), select_file("encrypt")])
+    btn_encrypt.place(relx=0.5, rely=0.6, anchor="center", width=200)
+
+    btn_decrypt = ttk.Button(root, text="Decrypt File", command=lambda: [animate_progress_bar(progress_bar), select_file("decrypt")])
+    btn_decrypt.place(relx=0.5, rely=0.7, anchor="center", width=200)
+
+    btn_exit = ttk.Button(root, text="Exit", command=root.quit)
+    btn_exit.place(relx=0.5, rely=0.8, anchor="center", width=200)
+
+    root.mainloop()
 
 if __name__ == "__main__":
     main()
